@@ -1,4 +1,4 @@
 version: 0.1
 artifacts:
-  type: zip
+  files: '**/*'
   base-directory: front-end
