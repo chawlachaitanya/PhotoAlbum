@@ -8,14 +8,25 @@ import urllib3
 
 def get_keywords(search_query):
     # Query Lex to get the keywords
-    # client = boto3.client('lexv2-runtime')
-    # response = client.recognize_text(botId='botId',
-    #                                  botAliasId='botAliasId',
-    #                                  localeId='en_US',
-    #                                  text=search_query,
-    #                                  sessionId=str(uuid.uuid4()))
-    # msgs_from_lex = response['messages']
-    return ['person', 'toy']
+    client = boto3.client('lexv2-runtime')
+    if search_query is None:
+        return []
+    response = client.recognize_text(botId='DGLZPKCKGV',
+                                     botAliasId='TSTALIASID',
+                                     localeId='en_US',
+                                     text=search_query,
+                                     sessionId=str(uuid.uuid4()))
+    return parse_keywords(response)
+    
+    
+def parse_keywords(response):
+    keywords = []
+    slots = response['sessionState']['intent']['slots']
+    if 'object1' in slots and slots['object1']:
+        keywords.append(slots['object1']['value']['interpretedValue'])
+    if 'object2' in slots and slots['object2']:
+        keywords.append(slots['object2']['value']['interpretedValue'])
+    return keywords
 
 
 def get_search_results(search_query):
@@ -38,7 +49,6 @@ def get_search_results(search_query):
             }
         }
     }
-
     resp = http.request("GET", url, headers=headers, body=json.dumps(query))
     data = json.loads(resp.data)['hits']['hits']
     results = [
@@ -49,5 +59,21 @@ def get_search_results(search_query):
 
     return results
 
-
-get_search_results('person')
+def lambda_handler(event, context):
+    # TODO implement
+    queryParams=event['queryStringParameters']
+    searchQuery=None
+    if 'q' in queryParams:
+        searchQuery=queryParams['q']
+    
+    results=get_search_results(searchQuery)
+    
+    headers={
+        'Access-Control-Allow-Origin':'*'
+    }
+    print(results)
+    return {
+        'statusCode': 200,
+        'body': json.dumps(results),
+        'headers': headers
+    }
