@@ -1,0 +1,79 @@
+<!-- Template: http://getbootstrap.com/examples/cover/ -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <title>Photo Album</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./assets/css/font-awesome.min.css" rel="stylesheet">
+    
+    <link href="./assets/css/photoalbum.css" rel="stylesheet">
+
+    <!-- api gateway generated sdk -->
+    <script src="./assets/js/sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script src="./assets/js/sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script src="./assets/js/sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script src="./assets/js/sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script src="./assets/js/sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script src="./assets/js/sdk/lib/url-template/url-template.js"></script>
+    <script src="./assets/js/sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script src="./assets/js/sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script src="./assets/js/sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script src="./assets/js/sdk/lib/apiGatewayCore/utils.js"></script>
+
+    <script src="./assets/js/sdk/apigClient.js"></script>
+
+    <script src="./assets/js/aws-sdk.min.js"></script>
+
+  </head>
+
+  <body>
+    <div class="container">
+        <h1>Photo Album</h1>
+        <div class="uploadForm">
+            <div>
+                <h2>Upload</h2>
+            </div>
+            <div class="input-group mb-3">
+                <input type="file" class="form-control" id="imageFile">
+                <label class="input-group-text" for="inputGroupFile02" onclick="uploadFile()">Upload</label>
+            </div>
+        </div>
+        <hr>
+        <div class="searchForm">
+            <div>
+                <h2>Search</h2>
+            </div>
+            <div class="searchBar">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search Query" id="searchQueryText">
+                <button id="searchButton" type="button" class="btn btn-primary" onclick="searchResults()">Search</button>
+              </div>
+            </div>
+            <div id="searchResults">
+            </div>
+        </div>
+
+    </div>
+    <script>
+
+      var sdk = apigClientFactory.newClient({});
+
+    </script>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- <script>window.jQuery || document.write('<script src="./assets/js/vendor/jquery.min.js"><\/script>')</script> -->
+    <script src="./assets/js/bootstrap.min.js"></script>
+    <!-- photoalbum js -->
+    <script src="./assets/js/photoalbum.js"></script>
+  </body>
+</html>

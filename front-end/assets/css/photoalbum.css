@@ -1,0 +1,22 @@
+.uploadForm {
+    display: flex;
+    width: 60%;
+    flex-direction: column;
+}
+
+.searchForm{
+    display: flex;
+    width: 60%;
+    flex-direction: column;
+}
+
+#searchButton{
+    margin-left: 2px;
+}
+
+.searchResults{
+    margin-top: 50px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
