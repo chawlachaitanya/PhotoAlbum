@@ -15,7 +15,6 @@ def get_s3_object_custom_labels(photo, bucket):
     # Get Custom labels from request and return them as well
     client = boto3.client('s3')
     response = client.head_object(Bucket=bucket, Key=photo)
-    print(response)
     return []
 
 
@@ -35,23 +34,25 @@ def add_to_elastic(photo_metadata):
 
 
 def index_photo(photo, bucket, eventTime):
-    # labels = detect_labels(photo, bucket)
+    labels = detect_labels(photo, bucket)
     custom_labels = get_s3_object_custom_labels(photo, bucket)
-    # all_labels=labels+custom_labels
-    # photo_metadata = {
-    #     'objectKey': photo,
-    #     'bucket': bucket,
-    #     'createdTimeStamp': eventTime,
-    #     'labels': all_labels
-    # }
-    # add_to_elastic(photo_metadata)
+    all_labels=labels+custom_labels
+    photo_metadata = {
+        'objectKey': photo,
+        'bucket': bucket,
+        'createdTimeStamp': eventTime,
+        'labels': all_labels
+    }
+    add_to_elastic(photo_metadata)
 
-
-def main():
-    photo = 'chawla3.jpg'
-    bucket = 'photosccbd'
-    index_photo(photo, bucket, '2022-03-22T00:49:51.251Z')
-
-
-if __name__ == "__main__":
-    main()
+def lambda_handler(event, context):
+    # TODO implement
+    bucket=event['Records'][0]['s3']['bucket']['name']
+    photo=event['Records'][0]['s3']['object']['key']
+    eventTime=event['Records'][0]['eventTime']
+    print(bucket, photo, eventTime)
+    index_photo(photo, bucket, eventTime)
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
