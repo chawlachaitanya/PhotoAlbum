@@ -34,7 +34,7 @@ apigClientFactory.newClient = function (config) {
         config.secretKey = '';
     }
     if(config.apiKey === undefined) {
-        config.apiKey = '';
+        config.apiKey = 'chawlachawlachawlachawlachawla';
     }
     if(config.sessionToken === undefined) {
         config.sessionToken = '';

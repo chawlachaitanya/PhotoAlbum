@@ -16,7 +16,14 @@ def get_keywords(search_query):
                                      localeId='en_US',
                                      text=search_query,
                                      sessionId=str(uuid.uuid4()))
-    return parse_keywords(response)
+    keywords=parse_keywords(response)
+    results=[]
+    for keyword in keywords:
+        if len(keyword)<=0:
+            continue
+        result.append(keyword)
+        if keyword[-1]=='s':
+            result.append(keyword[:-1])
     
     
 def parse_keywords(response):
