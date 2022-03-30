@@ -34,7 +34,7 @@ apigClientFactory.newClient = function (config) {
         config.secretKey = '';
     }
     if(config.apiKey === undefined) {
-        config.apiKey = 'chawlachawlachawlachawlachawla';
+        config.apiKey = '';
     }
     if(config.sessionToken === undefined) {
         config.sessionToken = '';
@@ -122,11 +122,12 @@ apigClientFactory.newClient = function (config) {
     apigClient.uploadItemPut = function (params, body, additionalParams) {
         if(additionalParams === undefined) { additionalParams = {}; }
         
-        apiGateway.core.utils.assertParametersDefined(params, ['item', 'Content-Type'], ['body']);
+        apiGateway.core.utils.assertParametersDefined(params, ['item', 'x-amz-meta-customLabels', 'Content-Type'], ['body']);
+        
         var uploadItemPutRequest = {
             verb: 'put'.toUpperCase(),
             path: pathComponent + uritemplate('/upload/{item}').expand(apiGateway.core.utils.parseParametersToObject(params, ['item', ])),
-            headers: apiGateway.core.utils.parseParametersToObject(params, ['Content-Type']),
+            headers: apiGateway.core.utils.parseParametersToObject(params, ['x-amz-meta-customLabels', 'Content-Type']),
             queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
             body: body
         };
@@ -139,12 +140,12 @@ apigClientFactory.newClient = function (config) {
     apigClient.uploadItemOptions = function (params, body, additionalParams) {
         if(additionalParams === undefined) { additionalParams = {}; }
         
-        apiGateway.core.utils.assertParametersDefined(params, [], ['body']);
+        apiGateway.core.utils.assertParametersDefined(params, ['x-amz-meta-customLabels'], ['body']);
         
         var uploadItemOptionsRequest = {
             verb: 'options'.toUpperCase(),
             path: pathComponent + uritemplate('/upload/{item}').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
-            headers: apiGateway.core.utils.parseParametersToObject(params, []),
+            headers: apiGateway.core.utils.parseParametersToObject(params, ['x-amz-meta-customLabels']),
             queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
             body: body
         };

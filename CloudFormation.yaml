@@ -1,0 +1,216 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
+
+Resources:
+  OS:
+    Type: 'AWS::OpenSearchService::Domain'
+    Properties:
+      ClusterConfig:
+        InstanceCount: '1'
+        InstanceType: t3.small.search
+        ZoneAwarenessEnabled: 'false'
+        DedicatedMasterEnabled: 'false'
+      DomainName: photoalbum
+      EBSOptions:
+        VolumeSize: 10
+        EBSEnabled: true
+        VolumeType: gp2
+        Iops: 0
+      EngineVersion: OpenSearch_1.0
+
+  RekognitionApi:
+    Type: 'AWS::Rekognition::Project'
+    Properties:
+      ProjectName: rekognition_photoalbum
+
+  BucketPhotos:
+    Type: 'AWS::S3::Bucket'
+    Description: Photo store
+    Properties:
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:Put'
+            Function: !GetAtt UploadLambda.Arn
+      BucketName: photostore
+      AccessControl: PublicReadWrite
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: 'false'
+        IgnorePublicAcls: 'false'
+        RestrictPublicBuckets: 'false'
+        BlockPublicPolicy: 'false'
+  
+  
+  
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      PathPart: upload
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt 
+      - ApiGateway
+      - RootResourceId
+
+  SearchResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      PathPart: search
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt 
+      - ApiGateway
+      - RootResourceId
+  
+  SearchGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ResourceId: !Ref SearchResource
+      RestApiId: !Ref ApiGateway
+      HttpMethod: GET
+      MethodResponses:
+        - StatusCode: 200
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - lambdaArn: !GetAtt SearchLambda.Arn
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+      
+
+  SearchOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: ApiGateway
+      ResourceId:
+        Ref: SearchResourceAPIGateway
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          ResponseTemplates:
+            application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: ''
+        ResponseParameters:
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+
+  UploadPut:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      RestApiId: !Ref ApiGateway   
+      ResourceId: !Ref UploadResource
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters: 
+            method.response.header.Access-Control-Allow-Origin: true
+      Integration:
+        IntegrationHttpMethod: POST
+        Uri: BucketPhotos.Arn
+        Type: AWS
+        
+      
+
+  UploadOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: ApiGateway
+      ResourceId:
+        Ref: UploadResource
+      HttpMethod: OPTIONS
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: ''
+        ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Methods: false
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+            method.response.header.Access-Control-Allow-Headers: "'x-amz-meta-customLabels,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'PUT,OPTIONS'"
+          ResponseTemplates:
+            application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: API Gateway
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Name: photo-gateway
+      
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - SearchGet
+      - SearchOptions
+      - UploadOptions
+      - UploadPut
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: v1
+  
+  BucketFrontEnd:
+    Type: 'AWS::S3::Bucket'
+    Description: Photo store
+    Properties:
+      BucketName: photoalbumui
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: 'false'
+        BlockPublicPolicy: 'false'
+        IgnorePublicAcls: 'false'
+        RestrictPublicBuckets: 'false'
+      AccessControl: PublicReadWrite
+  
+  SearchLambda:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: photo-search-cf
+      Handler: LF2.lambda_handler
+      Runtime: python3.9
+      CodeUri: s3://lambdas-ccbd/LF2.zip
+      Description: "Searching Lambda"
+      MemorySize: 128
+      Timeout: 30
+      Role: "arn:aws:iam::197953848710:role/service-role/LF2-role-dg7sdzil"
+      Environment:
+        Variables:
+          REGION: us-east-1
+
+  UploadLambda:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: photo-index-cf
+      Handler: LF1.lambda_handler
+      Runtime: python3.9
+      CodeUri: s3://lambdas-ccbd/LF1.zip
+      Description: "Indexing Lambda"
+      MemorySize: 128
+      Timeout: 30
+      Role: "arn:aws:iam::197953848710:role/service-role/LF1-role-01l9kubi"
+      Environment:
+        Variables:
+          REGION: us-east-1
