@@ -41,6 +41,7 @@ def index_photo(photo, bucket, eventTime):
     labels = detect_labels(photo, bucket)
     custom_labels = get_s3_object_custom_labels(photo, bucket)
     all_labels = labels + custom_labels
+    print(all_labels)
     photo_metadata = {
         'objectKey': photo,
         'bucket': bucket,
@@ -62,5 +63,3 @@ def lambda_handler(event, context):
         'body': json.dumps('Hello from Lambda!')
     }
 
-
-print(get_s3_object_custom_labels('Screenshot 2022-01-31 at 12.03.24 AM.png', 'photosccbd'))

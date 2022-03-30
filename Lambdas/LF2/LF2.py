@@ -16,14 +16,18 @@ def get_keywords(search_query):
                                      localeId='en_US',
                                      text=search_query,
                                      sessionId=str(uuid.uuid4()))
+    print(response)
     keywords=parse_keywords(response)
     results=[]
     for keyword in keywords:
         if len(keyword)<=0:
             continue
-        result.append(keyword)
+        results.append(keyword)
         if keyword[-1]=='s':
-            result.append(keyword[:-1])
+            results.append(keyword[:-1])
+    print(results)
+    print(keywords)
+    return results
     
     
 def parse_keywords(response):
@@ -58,6 +62,7 @@ def get_search_results(search_query):
     }
     resp = http.request("GET", url, headers=headers, body=json.dumps(query))
     data = json.loads(resp.data)['hits']['hits']
+    print(data)
     results = [
         {'url': 'http://s3.amazonaws.com/{0}/{1}'.format(item['_source']['bucket'],
                                                                 item['_source']['objectKey']),
